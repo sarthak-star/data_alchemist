@@ -27,7 +27,7 @@ export default function FileCard({ file }: FileCardProps) {
   return (
     <div
       onClick={handleNavigate}
-      className="border border-gray-500 shadow-md rounded-md p-4 h-[50%] flex items-center gap-4 border border-gray-200"
+      className="cursor-pointer hover:border-purple-400 border border-gray-500 shadow-md rounded-md p-4 h-[50%] w-fit flex items-center gap-4"
     >
       <div className="bg-purple-100 p-2 rounded-full">
         <FileSpreadsheet className="text-purple-600" size={24} />
@@ -36,7 +36,7 @@ export default function FileCard({ file }: FileCardProps) {
       <div className="flex flex-col flex-grow">
         <span className="font-medium text-white truncate">{file.name}</span>
         <span
-          className={`text-xs mt-1 px-2 py-0.5 rounded ${
+          className={`text-xs mt-1 w-fit px-2 py-0.5 rounded ${
             typeColors[file.type]
           }`}
         >

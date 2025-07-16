@@ -1,3 +1,4 @@
+import { UploadIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
@@ -35,15 +36,15 @@ export default function UploadModal({ onClose, onUpload }: UploadModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Upload File</h2>
+        <h2 className="text-2xl mb-2 font-bold text-gray-800">Upload File</h2>
 
         {/* Dropdown */}
-        <label className="block text-sm text-gray-700 mb-2">Select File Type</label>
         <select
           className="w-full border border-gray-300 rounded-md p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
         >
+          <option disabled value="">Select File Type</option>
           <option value="client">Client</option>
           <option value="worker">Worker</option>
           <option value="task">Task</option>
@@ -53,16 +54,16 @@ export default function UploadModal({ onClose, onUpload }: UploadModalProps) {
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-md p-6 text-center transition-colors ${
-            isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"
+            isDragActive ? "border-purple-500 bg-blue-50" : "border-purple-300"
           }`}
         >
           <input {...getInputProps()} />
           {selectedFile ? (
-            <p className="text-gray-700 font-medium">{selectedFile.name}</p>
+            <p className="font-medium text-purple-500">{selectedFile.name}</p>
           ) : isDragActive ? (
-            <p className="text-blue-500 font-medium">Drop the file here ...</p>
+            <div className="text-purple-500 flex flex-col items-center gap-2"><UploadIcon size={30}/> Drop the file here ...</div>
           ) : (
-            <p className="text-gray-500">Drag & drop a CSV/XLSX file, or click to select</p>
+            <div className="text-purple-500 flex flex-col items-center gap-2 cursor-pointer"><UploadIcon size={30}/> Drag & drop a CSV/XLSX file, or click to select</div>
           )}
         </div>
 

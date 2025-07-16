@@ -1,7 +1,7 @@
 import { useState } from "react";
 import UploadModal from "../components/UploadModal";
 import FileCard from "../components/FileCard";
-import { Plus } from "lucide-react";
+import { FolderClosed, Plus } from "lucide-react";
 
 export default function ManageData() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -18,7 +18,7 @@ export default function ManageData() {
   const filteredFiles = uploadedFiles.filter(f => f.type === selectedTab);
 
   return (
-    <div className="bg-gray-800 h-screen p-6 pt-28" >
+    <div className="bg-gray-800 h-screen p-6 pt-32" >
       {/* Upload button */}
       <div className="flex justify-end mb-6">
         <button
@@ -33,18 +33,18 @@ export default function ManageData() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Sidebar tabs */}
         <div className="md:col-span-1">
-          <div className="flex md:flex-col gap-2 bg-white rounded-md p-4 shadow-md border">
+          <div className="flex md:flex-col gap-2 rounded-md p-4 shadow-md">
             {(["client", "worker", "task"] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setSelectedTab(tab)}
-                className={`w-full text-left px-4 py-2 rounded-md font-medium ${
+                className={`w-full flex items-center text-base gap-2 text-left px-4 py-2 rounded-md font-medium ${
                   selectedTab === tab
                     ? "bg-purple-600 text-white"
-                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                    : "hover:text-white text-gray-400 "
                 }`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}s
+                <FolderClosed size={20} /> {tab.charAt(0).toUpperCase() + tab.slice(1)}s
               </button>
             ))}
           </div>

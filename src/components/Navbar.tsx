@@ -9,7 +9,10 @@ export default function Navbar() {
   return (
     <nav className="fixed w-screen bg-gradient-to-br from-purple-600 to-pink-500 p-6 text-white p-6 flex justify-between items-center">
       {/* Logo */}
-      <div className="text-3xl font-bold">Data Alchemist</div>
+      <div className="text-3xl font-bold flex flex-col">
+        <span>Data Alchemist</span>
+        <span className="text-base" >Forge Your Own AI Resource‑Allocation Configurator</span>
+      </div>
 
       {/* Buttons */}
       <div className="flex gap-3">

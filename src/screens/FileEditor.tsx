@@ -13,7 +13,7 @@ export default function FileEditor() {
   }
 
   return (
-    <div className="p-6 pt-28 text-white h-screen ">
+    <div className="p-6 pt-32 text-white h-screen ">
       <div className="flex justify-between mb-5">
         <div className="flex gap-2 items-end ">
           <h1 className="font-medium text-white truncate text-2xl ">
@@ -40,7 +40,9 @@ export default function FileEditor() {
           </button>
         </div>
       </div>
-      <DataGridViewer file={file} />
+      <div className="h-4/5 " >
+        <DataGridViewer file={file} />
+      </div>
     </div>
   );
 }
