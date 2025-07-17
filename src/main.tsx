@@ -1,14 +1,17 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { BrowserRouter } from 'react-router-dom'
-import 'react-data-grid/lib/styles.css';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.tsx";
+import { BrowserRouter } from "react-router-dom";
+import "react-data-grid/lib/styles.css";
+import { RuleProvider } from "./context/RuleContext.tsx";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <RuleProvider>
+        <App />
+      </RuleProvider>
     </BrowserRouter>
-  </StrictMode>,
-)
+  </StrictMode>
+);

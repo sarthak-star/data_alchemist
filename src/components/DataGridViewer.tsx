@@ -5,13 +5,28 @@ import { AllCommunityModule, ModuleRegistry, themeMaterial } from "ag-grid-commu
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-interface Props {
-  file: File;
+interface Rule {
+  column: string;
+  type: string;
+  minValue?: number;
+  maxValue?: number;
+  errorMessage: string;
 }
 
-export default function DataGridViewer({ file }: Props) {
+
+interface Props {
+  file: File;
+  validationOptions: string; // This is your global state that contains validation rules
+}
+
+export default function DataGridViewer({ file, validationOptions }: Props) {
   const [columns, setColumns] = useState<any[]>([]);
   const [rows, setRows] = useState<any[]>([]);
+  const [validationRules, setValidationRules] = useState<any[]>([])
+
+  useEffect(() => {
+    setValidationRules(JSON.parse(validationOptions) ?? '[]')
+  },[validationOptions])
 
   useEffect(() => {
     const parseFile = async () => {
@@ -35,26 +50,24 @@ export default function DataGridViewer({ file }: Props) {
             editable: true,
             cellRenderer: (params: any) => {
               const value = params.value;
-              const error = params.data?.error;
+              const error = params.data?.errors?.[params.column.colId];
 
-              // Show error message below the cell value if there's an error
               return (
-                <div className={`${error ? 'bg-red-500 text-white ' : 'text-black bg-white'}`} >
+                <div className={`${error ? 'bg-red-500 text-white' : 'text-black bg-white'}`} >
                   <div>{value}</div>
                   {error && <div style={{ fontSize: "12px" }}>{error}</div>}
                 </div>
               );
             },
             cellStyle: (params: any) => {
-              // Only highlight the error cell
-              if (params.data?.error && params.column.colId === params.colDef.field) {
-                return { backgroundColor: "#ef4444", color: "white" }; // Highlight error cell
-              }
-              return { backgroundColor: 'white', color: 'black' }; // Normal cell style
+              const error = params.data?.errors?.[params.colDef.field];
+              return error
+                ? { backgroundColor: "#ef4444", color: "white" }
+                : { backgroundColor: 'white', color: 'black' };
             },
           }));
 
-          const jsonRows = jsonData.map((rowData) => ({ ...rowData }));
+          const jsonRows = jsonData.map((rowData) => ({ ...rowData, errors: {} }));
           setColumns(columnDefs);
           setRows(jsonRows);
         }
@@ -65,13 +78,8 @@ export default function DataGridViewer({ file }: Props) {
     parseFile();
   }, [file]);
 
-  const validationRules = [
-    { column: "Age", type: "range", minValue: 18, maxValue: 100, message: "Age must be between 18 and 100" },
-    { column: "client_email", type: "email", message: "Invalid email format" },
-    { column: "client_name", type: "required", message: "Name cannot be empty" },
-  ];
 
-  const getValidatorForColumn = (columnName: string) => {
+  const getValidatorForColumn = (columnName: string, validationRules: Rule[]) => {
     const rule = validationRules.find((rule) => rule.column === columnName);
     if (!rule) return null;
 
@@ -82,18 +90,18 @@ export default function DataGridViewer({ file }: Props) {
       switch (rule.type) {
         case "range":
           if (value < rule.minValue! || value > rule.maxValue!) {
-            errorMessage = rule.message;
+            errorMessage = rule.errorMessage;
           }
           break;
         case "email":
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!emailRegex.test(value)) {
-            errorMessage = rule.message;
+            errorMessage = rule.errorMessage;
           }
           break;
         case "required":
           if (!value || value.trim() === "") {
-            errorMessage = rule.message;
+            errorMessage = rule.errorMessage;
           }
           break;
         default:
@@ -101,7 +109,7 @@ export default function DataGridViewer({ file }: Props) {
       }
 
       if (errorMessage) {
-        return { valid: false, error: errorMessage }; // Return error message
+        return { valid: false, error: errorMessage }; // Return error errorMessage
       }
 
       return { valid: true, error: null }; // No error
@@ -139,15 +147,16 @@ export default function DataGridViewer({ file }: Props) {
         editType="singleCell"
         onCellValueChanged={(event: any) => {
           const { colDef, data } = event;
-          const validator = getValidatorForColumn(colDef.field ?? "");
+          const validator = getValidatorForColumn(colDef.field ?? "", validationRules);
           if (validator) {
             const res = validator(event);
+            const errors = { ...data.errors };
             if (!res.valid) {
-              data.error = res.error; // Store error message on the specific cell
+              errors[colDef.field] = res.error; // Store error errorMessage for specific cell
             } else {
-              delete data.error; // Clear error if valid
+              delete errors[colDef.field]; // Clear error for specific cell if valid
             }
-            // Trigger grid refresh to apply styles
+            data.errors = errors; // Update errors object in row
             event.api.refreshCells({ rowNodes: [event.node], force: true });
           }
         }}

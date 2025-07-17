@@ -2,27 +2,34 @@ import { useLocation, useParams } from "react-router-dom"; // You should have a 
 import DataGridViewer from "../components/DataGridViewer";
 import { typeColors } from "../components/FileCard";
 import { Download } from "lucide-react";
+import { useRuleContext } from "../context/RuleContext"; // Import RuleContext hook
+import { useState } from "react";
 
 export default function FileEditor() {
   const location = useLocation();
   const file = location.state?.file as File;
   const { fileName, fileType = '' } = useParams(); // from /manage/:type/:filename
+  const { state } = useRuleContext(); // Access the global state
+
+  const [selectedRuleSet, setSelectedRuleSet] = useState<string>(); // Local state for selected rule set
 
   if (!file) {
     return <p className="text-red-600">File not found.</p>;
   }
 
+  // Handle change of selected rule set
+  const handleRuleSetChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRuleSet(event.target.value);
+  };
+
+
   return (
-    <div className="p-6 pt-32 text-white h-screen ">
+    <div className="p-6 pt-32 text-white h-screen">
       <div className="flex justify-between mb-5">
-        <div className="flex gap-2 items-end ">
-          <h1 className="font-medium text-white truncate text-2xl ">
-            {file.name}
-          </h1>
+        <div className="flex gap-2 items-end">
+          <h1 className="font-medium text-white truncate text-2xl">{file.name}</h1>
           <span
-            className={`text-xs px-2 py-1 rounded ${
-              typeColors[fileType ?? ""]
-            }`}
+            className={`text-xs px-2 py-1 rounded ${typeColors[fileType ?? ""]}`}
           >
             {fileType.charAt(0).toUpperCase() + fileType.slice(1)} File
           </span>
@@ -40,8 +47,28 @@ export default function FileEditor() {
           </button>
         </div>
       </div>
-      <div className="h-4/5 " >
-        <DataGridViewer file={file} />
+      
+      {/* Dropdown for rule set selection */}
+      <div className="mb-4">
+        <label htmlFor="rule-set-select" className="text-white text-sm">Select Validation Rule Set:</label>
+        <select
+          id="rule-set-select"
+          className="ml-2 p-2 rounded"
+          value={selectedRuleSet}
+          onChange={handleRuleSetChange}
+        >
+          <option value="">-- Select Rule Set --</option>
+          {state.ruleSets.map((ruleSet: {name: string, rules: any[]}) => (
+            <option key={ruleSet.name} value={JSON.stringify(ruleSet.rules)}>
+              {ruleSet.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="h-4/5">
+        {/* Pass the selected rules as props to DataGridViewer */}
+        <DataGridViewer file={file} validationOptions={selectedRuleSet ?? '[]'} />
       </div>
     </div>
   );
