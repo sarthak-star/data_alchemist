@@ -5,12 +5,15 @@ import App from "./App.tsx";
 import { BrowserRouter } from "react-router-dom";
 import "react-data-grid/lib/styles.css";
 import { RuleProvider } from "./context/RuleContext.tsx";
+import { TourProvider } from "./context/TourContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <RuleProvider>
-        <App />
+        <TourProvider>
+          <App />
+        </TourProvider>
       </RuleProvider>
     </BrowserRouter>
   </StrictMode>

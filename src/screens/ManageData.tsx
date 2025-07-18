@@ -3,15 +3,28 @@ import UploadModal from "../components/UploadModal";
 import FileCard from "../components/FileCard";
 import { FileX, FolderClosed, Plus } from "lucide-react";
 import introJs from "intro.js";
+import { useTour } from "../context/TourContext";
 
 export default function ManageData() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; type: string; file: File }[]>([]);
   const [selectedTab, setSelectedTab] = useState<"client" | "worker" | "task">("client");
-  const [hasStartedTour, setHasStartedTour] = useState(false);
+  const { addStep } = useTour();
 
   const handleUpload = (file: File, type: string) => {
-    setUploadedFiles([...uploadedFiles, { name: file.name, type, file }]);
+    // setUploadedFiles([...uploadedFiles, { name: file.name, type, file }]);
+    setUploadedFiles((prev) => {
+      const updated = [...prev, { name: file.name, type, file }];
+
+      setTimeout(() => {
+        addStep({
+          element: `#file-card-${updated.length-1}`, // ID or class for the uploaded file card
+          intro: "This is the file you just uploaded.",
+        });
+      }, 500); // Wait to ensure element is in DOM
+
+      return updated;
+    });
     setIsModalOpen(false);
   };
 
@@ -52,7 +65,11 @@ export default function ManageData() {
         {/* File cards */}
         <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredFiles.length > 0 ? (
-            filteredFiles.map((file, index) => <div key={index} id={`file-card-${index}`} ><FileCard  file={file} /></div> )
+            filteredFiles.map((file, index) => (
+              <div key={index} id={`file-card-${index}`}>
+                <FileCard file={file} />
+              </div>
+            ))
           ) : (
             <div className="col-span-full flex flex-col items-center gap-5 text-gray-500 text-center text-2xl py-10">
               <FileX size={72} /> No {selectedTab}s uploaded yet.

@@ -4,9 +4,21 @@ import Navbar from "./components/Navbar";
 import ManageData from "./screens/ManageData";
 import ConfigureRules from "./screens/ConfigureRules";
 import FileEditor from "./screens/FileEditor";
+import { useEffect } from "react";
+import { useTour } from './context/TourContext';
+
+
 
 function App() {
 
+  const { startTour } = useTour();
+  useEffect(() => {
+    const alreadySeen = localStorage.getItem("tourDone");
+    if (!alreadySeen) {
+      startTour();
+      localStorage.setItem("tourDone", "true");
+    }
+  }, []);
   return (
     <div>
       <Navbar />
