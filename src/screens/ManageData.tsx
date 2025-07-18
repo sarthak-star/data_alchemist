@@ -1,7 +1,7 @@
 import { useState } from "react";
 import UploadModal from "../components/UploadModal";
 import FileCard from "../components/FileCard";
-import { FolderClosed, Plus } from "lucide-react";
+import { FileX, FolderClosed, Plus } from "lucide-react";
 
 export default function ManageData() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -23,7 +23,7 @@ export default function ManageData() {
       <div className="flex justify-end mb-6">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-md font-medium"
+          className="flex items-center gap-1 bg-purple-500 text-white px-4 py-2 rounded-md font-medium"
         >
           <Plus size={22} /> Upload File
         </button>
@@ -57,8 +57,8 @@ export default function ManageData() {
               <FileCard key={index} file={file} />
             ))
           ) : (
-            <div className="col-span-full text-gray-500 text-center py-10">
-              No {selectedTab}s uploaded yet.
+            <div className="col-span-full flex flex-col items-center gap-5 text-gray-500 text-center text-2xl py-10">
+              <FileX size={72} /> No {selectedTab}s uploaded yet.
             </div>
           )}
         </div>

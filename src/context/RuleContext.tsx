@@ -1,5 +1,5 @@
 // RuleContext.tsx
-import React, { createContext, useReducer, useContext } from 'react';
+import { createContext, useReducer, useContext, useEffect } from 'react';
 
 // Rule object structure
 interface Rule {
@@ -36,9 +36,10 @@ interface AddRuleToSetAction {
 
 type RuleActions = AddRuleSetAction | AddRuleToSetAction;
 
-// Initial state
-const initialState: RuleState = {
-  ruleSets: [],
+// Load initial state from localStorage or use default
+const loadInitialState = (): RuleState => {
+  const storedState = localStorage.getItem('ruleState');
+  return storedState ? JSON.parse(storedState) : { ruleSets: [] };
 };
 
 // Reducer function to manage rule sets and rules
@@ -68,7 +69,12 @@ const RuleContext = createContext<any>(null);
 
 // Rule provider component
 export const RuleProvider = ({ children }: any) => {
-  const [state, dispatch] = useReducer(ruleReducer, initialState);
+  const [state, dispatch] = useReducer(ruleReducer, loadInitialState());
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('ruleState', JSON.stringify(state));
+  }, [state]);
 
   return (
     <RuleContext.Provider value={{ state, dispatch }}>

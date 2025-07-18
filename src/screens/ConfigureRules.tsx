@@ -1,5 +1,5 @@
 // RuleConfigurator.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { useRuleContext } from "../context/RuleContext"; // Import the context
 import Modal from "react-modal";
 import RuleList from "../components/RulesList";
@@ -14,11 +14,12 @@ const RuleConfigurator = () => {
     column: "",
     type: "",
     errorMessage: "",
+    errorColor: "#ff0000",
   });
 
   const handleAddRule = () => {
     setRules([...rules, newRule]);
-    setNewRule({ column: "", type: "", errorMessage: "" });
+    setNewRule({ column: "", type: "", errorMessage: "", errorColor: "#ff0000" });
   };
 
   const handleSave = () => {
@@ -56,7 +57,7 @@ const RuleConfigurator = () => {
             placeholder="Rule Set Name"
             value={ruleSetName}
             onChange={(e) => setRuleSetName(e.target.value)}
-            className="w-1/2 p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full outline-none border-b-2 p-3 focus:outline-none focus:border-purple-500"
           />
         </div>
 
@@ -67,7 +68,7 @@ const RuleConfigurator = () => {
             {/* Add Rule Button */}
             <button
               onClick={handleAddRule}
-              className="bg-green-500 flex items-center justify-evenly w-1/4 text-white py-1 px-4 rounded-lg  hover:bg-green-600"
+              className="bg-green-500 flex items-center justify-evenly gap-1 text-white py-1 px-4 rounded-lg  hover:bg-green-600"
             >
               <Plus size={20} /> Save
             </button>
@@ -77,13 +78,13 @@ const RuleConfigurator = () => {
             placeholder="Column Name"
             value={newRule.column}
             onChange={(e) => setNewRule({ ...newRule, column: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full outline-none border-b-2 p-3 focus:outline-none focus:border-purple-500"
           />
 
           <select
             value={newRule.type}
             onChange={(e) => setNewRule({ ...newRule, type: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full outline-none border-b-2 p-3 focus:outline-none focus:border-purple-500"
           >
             <option value="">Select Rule Type</option>
             <option value="required">Required</option>
@@ -96,13 +97,25 @@ const RuleConfigurator = () => {
             placeholder="Error Message"
             value={newRule.errorMessage}
             onChange={(e) => setNewRule({ ...newRule, errorMessage: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full outline-none border-b-2 p-3 focus:outline-none focus:border-purple-500"
           />
+
+          <div className="flex flex-row-reverse justify-end gap-2 items-center px-3" >
+            <label htmlFor="errorColor" className="text-xl" >Error Highlight color</label>
+            <input
+              name="errorColor"
+              type="color"
+              placeholder="Error Highlight Color"
+              value={newRule.errorColor}
+              onChange={(e) => setNewRule({ ...newRule, errorColor: e.target.value })}
+              // className="w-full outline-none border-b-2 p-3 focus:outline-none focus:border-purple-500"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
           <span className="font-semibold text-xl">Current Rules</span>
-          <div className="max-h-32 overflow-y-auto flex flex-col gap-2 " >
+          <div className="max-h-32 overflow-y-auto flex flex-col gap-2 ">
             {rules.map((rule: any) => {
               return (
                 <div className=" bg-purple-400 text-white rounded-lg p-2 flex gap-2">

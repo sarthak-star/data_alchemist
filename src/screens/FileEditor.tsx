@@ -8,7 +8,7 @@ import { useState } from "react";
 export default function FileEditor() {
   const location = useLocation();
   const file = location.state?.file as File;
-  const { fileName, fileType = '' } = useParams(); // from /manage/:type/:filename
+  const { fileType = '' } = useParams(); // from /manage/:type/:filename
   const { state } = useRuleContext(); // Access the global state
 
   const [selectedRuleSet, setSelectedRuleSet] = useState<string>(); // Local state for selected rule set

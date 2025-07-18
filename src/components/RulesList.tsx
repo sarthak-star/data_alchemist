@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRuleContext } from "../context/RuleContext"; // Import the context
+import { FileX, Plus } from "lucide-react";
 
 // Modal component
 const Modal: React.FC<{ ruleSet: { name: string; rules: any[] }; onClose: () => void }> = ({ ruleSet, onClose }) => {
@@ -33,12 +34,14 @@ const RuleList: React.FC<{ setModalOpen: (args: boolean) => void }> = ({ setModa
   return (
     <div className="p-6">
       <div className="flex text-white justify-between w-full mb-6" >
-        <h2 className="text-2xl  font-semibold">Saved Rule Sets</h2>
-        <button className="bg-purple-500 py-2 px-4 rounded-xl" onClick={() => setModalOpen(true)}>Create New Rule Set</button>
+        <h2 className="text-4xl  font-semibold">Saved Rule Sets</h2>
+        <button className="flex items-center gap-1 bg-purple-500 text-white px-4 py-2 rounded-md font-medium" onClick={() => setModalOpen(true)}>
+          <Plus size={22} /> Create Rule Set
+        </button>
       </div>
       <div>
         {state.ruleSets.length === 0 ? (
-          <p className="text-gray-600">No rule sets available.</p>
+          <p className="text-gray-600 text-center text-3xl flex flex-col items-center gap-5"><FileX size={72} /> No rule sets available.</p>
         ) : (
           <ul>
             {state?.ruleSets?.map((ruleSet: { name: string; rules: any[] }, index: number) => (
