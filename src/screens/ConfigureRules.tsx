@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRuleContext } from "../context/RuleContext"; // Import the context
 import Modal from "react-modal";
 import RuleList from "../components/RulesList";
-import { Plus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 
 const RuleConfigurator = () => {
   const { dispatch } = useRuleContext();
@@ -16,10 +16,29 @@ const RuleConfigurator = () => {
     errorMessage: "",
     errorColor: "#ff0000",
   });
+  const [editMode, setEditMode] = useState(false);
+  const [editRuleIndex, setEditRuleIndex] = useState<number | null>(null);
+  const [editRuleSetName, setEditRuleSetName] = useState<string | null>(null);
 
   const handleAddRule = () => {
-    setRules([...rules, newRule]);
+    if (editRuleIndex !== null) {
+      const updatedRules = [...rules];
+      updatedRules[editRuleIndex] = newRule;
+      setRules(updatedRules);
+      setEditRuleIndex(null);
+    } else {
+      setRules([...rules, newRule]);
+    }
+
     setNewRule({ column: "", type: "", errorMessage: "", errorColor: "#ff0000" });
+  };
+
+  const handleEdit = (ruleSet: { name: string; rules: any[] }) => {
+    setRuleSetName(ruleSet.name);
+    setRules(ruleSet.rules);
+    setEditMode(true);
+    setModalOpen(true);
+    setEditRuleSetName(ruleSet.name);
   };
 
   const handleSave = () => {
@@ -28,18 +47,31 @@ const RuleConfigurator = () => {
       return;
     }
 
-    const ruleSet = { name: ruleSetName, rules };
-    dispatch({ type: "ADD_RULE_SET", payload: ruleSet });
+    const updatedRuleSet = { name: ruleSetName, rules };
 
-    // Reset form fields
+    if (editRuleSetName) {
+      dispatch({
+        type: "UPDATE_RULE_SET",
+        payload: updatedRuleSet,
+      });
+    } else {
+      dispatch({
+        type: "ADD_RULE_SET",
+        payload: updatedRuleSet,
+      });
+    }
+
+    // Reset everything
     setRuleSetName("");
     setRules([]);
+    setNewRule({ column: "", type: "", errorMessage: "", errorColor: "#ff0000" });
+    setEditRuleSetName(null);
     setModalOpen(false);
   };
 
   return (
     <div className="bg-gray-800 h-screen p-6 pt-32">
-      <RuleList setModalOpen={setModalOpen} />
+      <RuleList setModalOpen={setModalOpen} onEdit={handleEdit} />
 
       <Modal
         isOpen={modalOpen}
@@ -62,17 +94,7 @@ const RuleConfigurator = () => {
         </div>
 
         <div className="mb-4 space-y-3">
-          <div className="flex justify-between">
-            {/* Rule Inputs */}
-            <span className="font-semibold text-xl">Create Rule</span>
-            {/* Add Rule Button */}
-            <button
-              onClick={handleAddRule}
-              className="bg-green-500 flex items-center justify-evenly gap-1 text-white py-1 px-4 rounded-lg  hover:bg-green-600"
-            >
-              <Plus size={20} /> Save
-            </button>
-          </div>
+          <span className="font-semibold text-xl">Create Rule</span>
           <input
             type="text"
             placeholder="Column Name"
@@ -100,8 +122,10 @@ const RuleConfigurator = () => {
             className="w-full outline-none border-b-2 p-3 focus:outline-none focus:border-purple-500"
           />
 
-          <div className="flex flex-row-reverse justify-end gap-2 items-center px-3" >
-            <label htmlFor="errorColor" className="text-xl" >Error Highlight color</label>
+          <div className="flex flex-row-reverse justify-end gap-2 items-center px-3">
+            <label htmlFor="errorColor" className="text-xl">
+              Error Highlight color
+            </label>
             <input
               name="errorColor"
               type="color"
@@ -111,22 +135,68 @@ const RuleConfigurator = () => {
               // className="w-full outline-none border-b-2 p-3 focus:outline-none focus:border-purple-500"
             />
           </div>
+          {/* Add Rule Button */}
+          <div className="w-full flex justify-end">
+            <button
+              onClick={handleAddRule}
+              className="bg-green-500 flex items-center justify-evenly gap-1 text-white py-1 px-4 rounded-lg hover:bg-green-600"
+            >
+              <Plus size={20} /> {editRuleIndex !== null ? "Update" : "Save"}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-2">
           <span className="font-semibold text-xl">Current Rules</span>
-          <div className="max-h-32 overflow-y-auto flex flex-col gap-2 ">
-            {rules.map((rule: any) => {
-              return (
-                <div className=" bg-purple-400 text-white rounded-lg p-2 flex gap-2">
-                  <span>{rule.column}</span>,<span>{rule.type}</span>,<span>{rule.errorMessage}</span>
+          <div className="max-h-32 overflow-y-auto flex flex-col gap-2">
+            {rules.map((rule: any, index: number) => (
+              <div key={index} className="bg-purple-500 text-white rounded-lg p-3 flex justify-between items-center shadow-md">
+                <div className="flex flex-col text-sm">
+                  <span>
+                    <strong>Column:</strong> {rule.column}
+                  </span>
+                  <span>
+                    <strong>Type:</strong> {rule.type}
+                  </span>
+                  <span>
+                    <strong>Message:</strong> {rule.errorMessage}
+                  </span>
                 </div>
-              );
-            })}
+
+                <div className="flex gap-3 items-center">
+                  <button
+                    onClick={() => {
+                      setNewRule(rule);
+                      setEditRuleIndex(index);
+                    }}
+                    className="p-2 bg-yellow-400 hover:bg-yellow-500 text-black rounded-full"
+                    title="Edit"
+                  >
+                    <Pencil size={18} />
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const updatedRules = [...rules];
+                      updatedRules.splice(index, 1);
+                      setRules(updatedRules);
+                      if (editRuleIndex === index) {
+                        setEditRuleIndex(null);
+                        setNewRule({ column: "", type: "", errorMessage: "", errorColor: "#ff0000" });
+                      }
+                    }}
+                    className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-full"
+                    title="Delete"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
         {/* Save Rule Set */}
-        <button onClick={handleSave} className="bg-blue-500 text-white py-2 px-6 rounded-lg shadow-lg mt-4 hover:bg-blue-600">
+        <button onClick={handleSave} className="bg-green-500 text-white py-2 px-6 rounded-lg shadow-lg mt-4 hover:bg-blue-600">
           Save Rule Set
         </button>
       </Modal>

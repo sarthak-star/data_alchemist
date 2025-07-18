@@ -11,28 +11,22 @@ export default function Navbar() {
       {/* Logo */}
       <div className="text-3xl font-bold flex flex-col">
         <span>Data Alchemist</span>
-        <span className="text-base" >Forge Your Own AI Resource‑Allocation Configurator</span>
+        <span className="text-base">Forge Your Own AI Resource‑Allocation Configurator</span>
       </div>
 
       {/* Buttons */}
       <div className="flex gap-3">
-        <button
-          className={`px-4 py-2 rounded-md text-sm font-medium ${
-            isActive('/manage')
-              ? "bg-gray-600 text-white"
-              : ""
-          }`}
-        >
-          <Link className="flex items-center gap-1" to="/manage"><Database size={16} />Manage Data</Link>
+        <button id="nav-manage" className={`px-4 py-2 rounded-md text-sm font-medium ${isActive("/manage") ? "bg-gray-600 text-white" : ""}`}>
+          <Link className="flex items-center gap-1" to="/manage">
+            <Database size={16} />
+            Manage Data
+          </Link>
         </button>
-        <button
-          className={`px-4 py-2 rounded-md text-sm font-medium ${
-            isActive('/configure')
-              ? "bg-gray-600 text-white"
-              : ""
-          }`}
-        >
-          <Link className="flex items-center gap-1" to="/configure"><Settings size={16} />Configure Rules</Link>
+        <button id="nav-configure" className={`px-4 py-2 rounded-md text-sm font-medium ${isActive("/configure") ? "bg-gray-600 text-white" : ""}`}>
+          <Link className="flex items-center gap-1" to="/configure">
+            <Settings size={16} />
+            Configure Rules
+          </Link>
         </button>
       </div>
     </nav>

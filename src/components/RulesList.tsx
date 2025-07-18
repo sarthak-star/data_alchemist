@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRuleContext } from "../context/RuleContext"; // Import the context
-import { FileX, Plus } from "lucide-react";
+import { Edit, Eye, FileX, Plus } from "lucide-react";
 
 // Modal component
 const Modal: React.FC<{ ruleSet: { name: string; rules: any[] }; onClose: () => void }> = ({ ruleSet, onClose }) => {
@@ -19,7 +19,12 @@ const Modal: React.FC<{ ruleSet: { name: string; rules: any[] }; onClose: () => 
   );
 };
 
-const RuleList: React.FC<{ setModalOpen: (args: boolean) => void }> = ({ setModalOpen }) => {
+interface RuleListProps {
+  setModalOpen: (args: boolean) => void;
+  onEdit: (ruleSet: { name: string; rules: any[] }) => void; // ✅ NEW
+}
+
+const RuleList: React.FC<RuleListProps> = ({ setModalOpen, onEdit }) => {
   const { state } = useRuleContext();
   const [selectedRuleSet, setSelectedRuleSet] = useState<{ name: string; rules: any[] } | null>(null);
 
@@ -28,38 +33,55 @@ const RuleList: React.FC<{ setModalOpen: (args: boolean) => void }> = ({ setModa
   };
 
   const handleCloseModal = () => {
-    setSelectedRuleSet(null); // Clear the selected rule set when closing the modal
+    setSelectedRuleSet(null);
   };
 
   return (
     <div className="p-6">
-      <div className="flex text-white justify-between w-full mb-6" >
-        <h2 className="text-4xl  font-semibold">Saved Rule Sets</h2>
-        <button className="flex items-center gap-1 bg-purple-500 text-white px-4 py-2 rounded-md font-medium" onClick={() => setModalOpen(true)}>
+      <div className="flex text-white justify-between w-full mb-6">
+        <h2 className="text-4xl font-semibold">Saved Rule Sets</h2>
+        <button
+          className="flex items-center gap-1 bg-purple-500 text-white px-4 py-2 rounded-md font-medium"
+          onClick={() => setModalOpen(true)}
+        >
           <Plus size={22} /> Create Rule Set
         </button>
       </div>
+
       <div>
         {state.ruleSets.length === 0 ? (
-          <p className="text-gray-600 text-center text-3xl flex flex-col items-center gap-5"><FileX size={72} /> No rule sets available.</p>
+          <p className="text-gray-600 text-center text-3xl flex flex-col items-center gap-5">
+            <FileX size={72} /> No rule sets available.
+          </p>
         ) : (
           <ul>
-            {state?.ruleSets?.map((ruleSet: { name: string; rules: any[] }, index: number) => (
+            {state.ruleSets.map((ruleSet: any, index: number) => (
               <li key={index} className="mb-4 bg-white p-6 rounded-lg shadow-lg flex justify-between items-center">
                 <div className="font-semibold">{ruleSet.name}</div>
-                <button onClick={() => handleViewClick(ruleSet)} className="bg-blue-500 text-white py-1 px-4 rounded-lg shadow-lg hover:bg-blue-600">
-                  View
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleViewClick(ruleSet)}
+                    className="bg-purple-500 text-white p-3 rounded-lg hover:bg-blue-600"
+                  >
+                    <Eye size={28} />
+                  </button>
+                  <button
+                    onClick={() => onEdit(ruleSet)} // ✅ Trigger edit
+                    className="bg-purple-500 text-white p-3 rounded-lg hover:bg-yellow-600"
+                  >
+                    <Edit size={28}/>
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </div>
 
-      {/* Modal will show when a rule set is selected */}
       {selectedRuleSet && <Modal ruleSet={selectedRuleSet} onClose={handleCloseModal} />}
     </div>
   );
 };
 
 export default RuleList;
+

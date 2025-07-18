@@ -11,22 +11,23 @@ interface Rule {
   minValue?: number;
   maxValue?: number;
   errorMessage: string;
+  errorColor: string;
 }
-
 
 interface Props {
   file: File;
   validationOptions: string; // This is your global state that contains validation rules
+  onDataUpdate?: (rows: any[]) => void;
 }
 
-export default function DataGridViewer({ file, validationOptions }: Props) {
+export default function DataGridViewer({ file, validationOptions, onDataUpdate }: Props) {
   const [columns, setColumns] = useState<any[]>([]);
   const [rows, setRows] = useState<any[]>([]);
-  const [validationRules, setValidationRules] = useState<any[]>([])
+  const [validationRules, setValidationRules] = useState<any[]>([]);
 
   useEffect(() => {
-    setValidationRules(JSON.parse(validationOptions) ?? '[]')
-  },[validationOptions])
+    setValidationRules(JSON.parse(validationOptions) ?? "[]");
+  }, [validationOptions]);
 
   useEffect(() => {
     const parseFile = async () => {
@@ -50,26 +51,34 @@ export default function DataGridViewer({ file, validationOptions }: Props) {
             editable: true,
             cellRenderer: (params: any) => {
               const value = params.value;
-              const error = params.data?.errors?.[params.column.colId];
+              const errorObj = params.data?.errors?.[params.column.colId];
+              const errorColor = errorObj?.color || "#ef4444";
 
               return (
-                <div className={`${error ? 'bg-red-500 text-white' : 'text-black bg-white'}`} >
+                <div className={`${errorObj ? "text-white" : "text-black"}`} style={{ backgroundColor: errorObj ? errorColor : "white" }}>
                   <div>{value}</div>
-                  {error && <div style={{ fontSize: "12px" }}>{error}</div>}
+                  {/* {errorObj && (
+                    <div style={{ fontSize: "12px" }}>
+                      {value} {errorObj.error}
+                    </div>
+                  )} */}
                 </div>
               );
             },
             cellStyle: (params: any) => {
-              const error = params.data?.errors?.[params.colDef.field];
-              return error
-                ? { backgroundColor: "#ef4444", color: "white" }
-                : { backgroundColor: 'white', color: 'black' };
+              const errorObj = params.data?.errors?.[params.colDef.field];
+              return errorObj ? { backgroundColor: errorObj.color || "#ef4444", color: "white" } : { backgroundColor: "white", color: "black" };
+            },
+            tooltipValueGetter: (params: any) => {
+              const errorObj = params.data?.errors?.[params.colDef.field];
+              return errorObj ? errorObj.error : null; // ✅ Tooltip only shows if error exists
             },
           }));
 
           const jsonRows = jsonData.map((rowData) => ({ ...rowData, errors: {} }));
           setColumns(columnDefs);
           setRows(jsonRows);
+          onDataUpdate?.(jsonRows);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -78,7 +87,6 @@ export default function DataGridViewer({ file, validationOptions }: Props) {
     parseFile();
   }, [file]);
 
-
   const getValidatorForColumn = (columnName: string, validationRules: Rule[]) => {
     const rule = validationRules.find((rule) => rule.column === columnName);
     if (!rule) return null;
@@ -86,22 +94,26 @@ export default function DataGridViewer({ file, validationOptions }: Props) {
     return (params: any) => {
       const value = params.newValue;
       let errorMessage = "";
+      let errorColor = "";
 
       switch (rule.type) {
         case "range":
           if (value < rule.minValue! || value > rule.maxValue!) {
             errorMessage = rule.errorMessage;
+            errorColor = rule.errorColor;
           }
           break;
         case "email":
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!emailRegex.test(value)) {
             errorMessage = rule.errorMessage;
+            errorColor = rule.errorColor;
           }
           break;
         case "required":
           if (!value || value.trim() === "") {
             errorMessage = rule.errorMessage;
+            errorColor = rule.errorColor;
           }
           break;
         default:
@@ -109,10 +121,10 @@ export default function DataGridViewer({ file, validationOptions }: Props) {
       }
 
       if (errorMessage) {
-        return { valid: false, error: errorMessage }; // Return error errorMessage
+        return { valid: false, error: errorMessage, errorColor }; // Return error errorMessage
       }
 
-      return { valid: true, error: null }; // No error
+      return { valid: true, error: null, errorColor: "" }; // No error
     };
   };
 
@@ -128,7 +140,7 @@ export default function DataGridViewer({ file, validationOptions }: Props) {
     accentColor: "purple",
     headerTextColor: "purple",
     headerFontSize: "0.9rem",
-    headerColumnResizeHandleColor: "purple"
+    headerColumnResizeHandleColor: "purple",
   });
 
   const theme = useMemo(() => {
@@ -152,13 +164,15 @@ export default function DataGridViewer({ file, validationOptions }: Props) {
             const res = validator(event);
             const errors = { ...data.errors };
             if (!res.valid) {
-              errors[colDef.field] = res.error; // Store error errorMessage for specific cell
+              errors[colDef.field] = { error: res.error, color: res.errorColor }; // Store error errorMessage for specific cell
             } else {
               delete errors[colDef.field]; // Clear error for specific cell if valid
             }
             data.errors = errors; // Update errors object in row
             event.api.refreshCells({ rowNodes: [event.node], force: true });
           }
+          setRows([...rows]); // Ensure latest data is saved
+          onDataUpdate?.([...rows]);
         }}
         defaultColDef={defaultColDef}
         className="bg-white"

@@ -1,5 +1,5 @@
 // RuleContext.tsx
-import { createContext, useReducer, useContext, useEffect } from 'react';
+import { createContext, useReducer, useContext, useEffect } from "react";
 
 // Rule object structure
 interface Rule {
@@ -20,8 +20,9 @@ interface RuleState {
 }
 
 // Action types
-const ADD_RULE_SET = 'ADD_RULE_SET';
-const ADD_RULE_TO_SET = 'ADD_RULE_TO_SET';
+const ADD_RULE_SET = "ADD_RULE_SET";
+const ADD_RULE_TO_SET = "ADD_RULE_TO_SET";
+const UPDATE_RULE_SET = "UPDATE_RULE_SET";
 
 // Action interfaces
 interface AddRuleSetAction {
@@ -34,11 +35,16 @@ interface AddRuleToSetAction {
   payload: { ruleSetName: string; rule: Rule };
 }
 
-type RuleActions = AddRuleSetAction | AddRuleToSetAction;
+interface UpdateRuleSetAction {
+  type: typeof UPDATE_RULE_SET;
+  payload: RuleSet;
+}
+
+type RuleActions = AddRuleSetAction | AddRuleToSetAction | UpdateRuleSetAction;
 
 // Load initial state from localStorage or use default
 const loadInitialState = (): RuleState => {
-  const storedState = localStorage.getItem('ruleState');
+  const storedState = localStorage.getItem("ruleState");
   return storedState ? JSON.parse(storedState) : { ruleSets: [] };
 };
 
@@ -54,10 +60,13 @@ const ruleReducer = (state: RuleState, action: RuleActions): RuleState => {
       return {
         ...state,
         ruleSets: state.ruleSets.map((ruleSet) =>
-          ruleSet.name === action.payload.ruleSetName
-            ? { ...ruleSet, rules: [...ruleSet.rules, action.payload.rule] }
-            : ruleSet
+          ruleSet.name === action.payload.ruleSetName ? { ...ruleSet, rules: [...ruleSet.rules, action.payload.rule] } : ruleSet
         ),
+      };
+    case UPDATE_RULE_SET:
+      return {
+        ...state,
+        ruleSets: state.ruleSets.map((set) => (set.name === action.payload.name ? action.payload : set)),
       };
     default:
       return state;
@@ -73,14 +82,10 @@ export const RuleProvider = ({ children }: any) => {
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('ruleState', JSON.stringify(state));
+    localStorage.setItem("ruleState", JSON.stringify(state));
   }, [state]);
 
-  return (
-    <RuleContext.Provider value={{ state, dispatch }}>
-      {children}
-    </RuleContext.Provider>
-  );
+  return <RuleContext.Provider value={{ state, dispatch }}>{children}</RuleContext.Provider>;
 };
 
 // Custom hook to use the rule context
