@@ -1,4 +1,4 @@
-import { ArrowDown, ChevronDown, UploadIcon } from "lucide-react";
+import { ChevronDown, UploadIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 

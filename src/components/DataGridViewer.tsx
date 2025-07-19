@@ -6,7 +6,6 @@ import {
   ModuleRegistry,
   themeMaterial,
 } from "ag-grid-community";
-import type { Rule } from "../screens/ConfigureRules";
 import { getValidatorForColumn } from "../utils/Validators";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -125,6 +124,8 @@ export default function DataGridViewer({
   const theme = useMemo(() => {
     return myTheme;
   }, []);
+
+  
 
   return (
     <div className="rounded-2xl" style={{ height: "100%", width: "100%" }}>

@@ -1,4 +1,5 @@
 import type { Rule } from "../screens/ConfigureRules";
+import { RuleType } from "../utils/Constants"; 
 
 export const getValidatorForColumn = (
     columnName: string,
@@ -13,14 +14,14 @@ export const getValidatorForColumn = (
       let errorColor = "";
 
       switch (rule.type) {
-        case "required":
+        case RuleType.REQUIRED:
           if (!value || value.trim() === "") {
             errorMessage = rule.errorMessage;
             errorColor = rule.errorColor;
           }
           break;
 
-        case "range":
+        case RuleType.RANGE:
           if (
             typeof value !== "number" ||
             value < (rule.minValue ?? -Infinity) ||
@@ -31,7 +32,7 @@ export const getValidatorForColumn = (
           }
           break;
 
-        case "email":
+        case RuleType.EMAIL:
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!emailRegex.test(value)) {
             errorMessage = rule.errorMessage;
@@ -39,7 +40,7 @@ export const getValidatorForColumn = (
           }
           break;
 
-        case "minLength":
+        case RuleType.MIN_LENGTH:
           if (
             typeof value !== "string" ||
             value.length < (rule.minLength ?? 0)
@@ -49,7 +50,7 @@ export const getValidatorForColumn = (
           }
           break;
 
-        case "maxLength":
+        case RuleType.MAX_LENGTH:
           if (
             typeof value !== "string" ||
             value.length > (rule.maxLength ?? Infinity)
@@ -59,7 +60,7 @@ export const getValidatorForColumn = (
           }
           break;
 
-        case "pattern":
+        case RuleType.PATTERN:
           try {
             const regex = new RegExp(rule.pattern || "");
             if (!regex.test(value)) {
@@ -71,7 +72,7 @@ export const getValidatorForColumn = (
           }
           break;
 
-        case "inList":
+        case RuleType.IN_LIST:
           const allowed = (rule.allowedValues || "")
             .split(",")
             .map((v) => v.trim());
@@ -81,28 +82,28 @@ export const getValidatorForColumn = (
           }
           break;
 
-        case "startsWith":
+        case RuleType.STARTS_WITH:
           if (!value.startsWith(rule.targetValue || "")) {
             errorMessage = rule.errorMessage;
             errorColor = rule.errorColor;
           }
           break;
 
-        case "endsWith":
+        case RuleType.ENDS_WITH:
           if (!value.endsWith(rule.targetValue || "")) {
             errorMessage = rule.errorMessage;
             errorColor = rule.errorColor;
           }
           break;
 
-        case "number":
+        case RuleType.NUMBER:
           if (isNaN(Number(value))) {
             errorMessage = rule.errorMessage;
             errorColor = rule.errorColor;
           }
           break;
 
-        case "text":
+        case RuleType.TEXT:
           if (/\d/.test(value)) {
             errorMessage = rule.errorMessage;
             errorColor = rule.errorColor;

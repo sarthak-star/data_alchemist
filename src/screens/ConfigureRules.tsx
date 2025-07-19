@@ -4,22 +4,11 @@ import { useRuleContext } from "../context/RuleContext"; // Import the context
 import Modal from "react-modal";
 import RuleList from "../components/RulesList";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import type { RuleType } from "../utils/Constants";
 
 export interface Rule {
   column: string;
-  type:
-    | ""
-    | "required"
-    | "range"
-    | "email"
-    | "minLength"
-    | "maxLength"
-    | "pattern"
-    | "inList"
-    | "startsWith"
-    | "endsWith"
-    | "number"
-    | "text";
+  type: RuleType;
   errorMessage: string;
   errorColor: string;
 
@@ -65,7 +54,6 @@ const RuleConfigurator = () => {
     targetValue: "",
   });
 
-  const [editMode, setEditMode] = useState(false);
   const [editRuleIndex, setEditRuleIndex] = useState<number | null>(null);
   const [editRuleSetName, setEditRuleSetName] = useState<string | null>(null);
 
@@ -111,7 +99,6 @@ const RuleConfigurator = () => {
   const handleEdit = (ruleSet: { name: string; rules: any[] }) => {
     setRuleSetName(ruleSet.name);
     setRules(ruleSet.rules);
-    setEditMode(true);
     setModalOpen(true);
     setEditRuleSetName(ruleSet.name);
   };
