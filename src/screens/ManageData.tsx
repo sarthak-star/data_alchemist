@@ -15,7 +15,7 @@ export default function ManageData() {
 
   useEffect(() => {
     const loadDemoFile = async () => {
-      const response = await fetch("/dummyFiles/dummy_data.csv");
+      const response = await fetch("/assets/dummyFiles/dummy_data.csv");
       const blob = await response.blob();
       const text = await blob.text();
 
