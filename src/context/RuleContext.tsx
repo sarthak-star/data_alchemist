@@ -1,12 +1,6 @@
 // RuleContext.tsx
 import { createContext, useReducer, useContext, useEffect } from "react";
-
-// Rule object structure
-interface Rule {
-  column: string;
-  type: string;
-  errorMessage: string;
-}
+import type { Rule } from "../screens/ConfigureRules";
 
 // Rule set structure with a name and rules
 interface RuleSet {
@@ -18,7 +12,6 @@ interface RuleSet {
 interface RuleState {
   ruleSets: RuleSet[];
 }
-
 
 // Action types
 const ADD_RULE_SET = "ADD_RULE_SET";
@@ -55,8 +48,48 @@ type RuleActions =
 
 // Load initial state from localStorage or use default
 const loadInitialState = (): RuleState => {
+  const defaultRuleSet: RuleSet = {
+    name: "Dummy Rules",
+    rules: [
+      {
+        column: "Message",
+        type: "text",
+        errorMessage: "Message can only be of type Text",
+        errorColor: "#ff00ae",
+        pattern: "",
+        allowedValues: "",
+        targetValue: "",
+      },
+      {
+        column: "Category",
+        type: "inList",
+        errorMessage: "Value out of bounds",
+        errorColor: "#ff0000",
+        pattern: "",
+        allowedValues: "ham,spam",
+        targetValue: "",
+      },
+    ],
+  };
+
   const storedState = localStorage.getItem("ruleState");
-  return storedState ? JSON.parse(storedState) : { ruleSets: [] };
+
+  if (storedState) {
+    const parsed: RuleState = JSON.parse(storedState);
+
+    // Avoid adding demo if it's already there (by name)
+    const demoExists = parsed.ruleSets.some(
+      (rs) => rs.name === defaultRuleSet.name
+    );
+    return {
+      ruleSets: demoExists
+        ? parsed.ruleSets
+        : [defaultRuleSet, ...parsed.ruleSets],
+    };
+  }
+
+  // First-time user — only demo rules
+  return { ruleSets: [defaultRuleSet] };
 };
 
 // Reducer function to manage rule sets and rules
@@ -86,7 +119,9 @@ const ruleReducer = (state: RuleState, action: RuleActions): RuleState => {
     case DELETE_RULE_SET:
       return {
         ...state,
-        ruleSets: state.ruleSets.filter((rs) => rs.name !== action.payload.name),
+        ruleSets: state.ruleSets.filter(
+          (rs) => rs.name !== action.payload.name
+        ),
       };
     default:
       return state;

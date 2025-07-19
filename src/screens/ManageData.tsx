@@ -1,29 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import UploadModal from "../components/UploadModal";
 import FileCard from "../components/FileCard";
 import { FileX, FolderClosed, Plus } from "lucide-react";
-import { useTour } from "../context/TourContext";
+import * as XLSX from "xlsx";
 
 export default function ManageData() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; type: string; file: File }[]>([]);
-  const [selectedTab, setSelectedTab] = useState<"client" | "worker" | "task">("client");
-  const { addStep } = useTour();
+  const [uploadedFiles, setUploadedFiles] = useState<
+    { name: string; type: string; file: File }[]
+  >([]);
+  const [selectedTab, setSelectedTab] = useState<"client" | "worker" | "task">(
+    "client"
+  );
+
+  useEffect(() => {
+    const loadDemoFile = async () => {
+      const response = await fetch("/public/dummyFiles/dummy_data.csv");
+      const blob = await response.blob();
+      const text = await blob.text();
+
+      // Convert the text into a workbook
+      const workbook = XLSX.read(text, { type: "string" });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+      if (jsonData.length > 0) {
+        const file = new File([blob], "dummy_data.csv", { type: "text/csv" });
+
+        setUploadedFiles((prev) => [
+          ...prev,
+          { name: file.name, type: "client", file },
+        ]);
+      }
+    };
+
+    loadDemoFile();
+  }, []);
 
   const handleUpload = (file: File, type: string) => {
     // setUploadedFiles([...uploadedFiles, { name: file.name, type, file }]);
     setUploadedFiles((prev) => {
       const updated = [...prev, { name: file.name, type, file }];
-
-      if(updated.length === 1) {
-        setTimeout(() => {
-        addStep({
-          element: `#file-card-0`, // ID or class for the uploaded file card
-          intro: "Click here to view and edit data file.",
-        });
-      }, 500);
-      } // Wait to ensure element is in DOM
-
       return updated;
     });
     setIsModalOpen(false);
@@ -54,10 +71,13 @@ export default function ManageData() {
                 key={tab}
                 onClick={() => setSelectedTab(tab)}
                 className={`w-full flex items-center text-base gap-2 text-left px-4 py-2 rounded-md font-medium ${
-                  selectedTab === tab ? "bg-purple-600 text-white" : "hover:text-white text-gray-400 "
+                  selectedTab === tab
+                    ? "bg-purple-600 text-white"
+                    : "hover:text-white text-gray-400 "
                 }`}
               >
-                <FolderClosed size={20} /> {tab.charAt(0).toUpperCase() + tab.slice(1)}s
+                <FolderClosed size={20} />{" "}
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}s
               </button>
             ))}
           </div>
@@ -80,7 +100,12 @@ export default function ManageData() {
       </div>
 
       {/* Modal */}
-      {isModalOpen && <UploadModal onClose={() => setIsModalOpen(false)} onUpload={handleUpload} />}
+      {isModalOpen && (
+        <UploadModal
+          onClose={() => setIsModalOpen(false)}
+          onUpload={handleUpload}
+        />
+      )}
     </div>
   );
 }

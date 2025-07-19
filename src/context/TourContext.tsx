@@ -27,6 +27,10 @@ export const TourProvider = ({ children }: { children: React.ReactNode }) => {
       element: "#btn-upload",
       intro: "Click here to upload a data file.",
     },
+    {
+      element: "#file-card-0",
+      intro: "Click on the uploaded files to view and edit.",
+    }
   ]);
 
   const startTour = () => {

@@ -8,7 +8,7 @@ import { RuleProvider } from "./context/RuleContext.tsx";
 import { TourProvider } from "./context/TourContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  // <StrictMode>
     <BrowserRouter>
       <RuleProvider>
         <TourProvider>
@@ -16,5 +16,5 @@ createRoot(document.getElementById("root")!).render(
         </TourProvider>
       </RuleProvider>
     </BrowserRouter>
-  </StrictMode>
+  // </StrictMode>
 );
