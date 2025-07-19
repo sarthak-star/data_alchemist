@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRuleContext } from "../context/RuleContext"; // Import the context
-import { Edit, Eye, FileX, Plus } from "lucide-react";
+import { Edit, Eye, FileX, Plus, Trash } from "lucide-react";
 
 // Modal component
 const Modal: React.FC<{ ruleSet: { name: string; rules: any[] }; onClose: () => void }> = ({ ruleSet, onClose }) => {
@@ -22,9 +22,10 @@ const Modal: React.FC<{ ruleSet: { name: string; rules: any[] }; onClose: () => 
 interface RuleListProps {
   setModalOpen: (args: boolean) => void;
   onEdit: (ruleSet: { name: string; rules: any[] }) => void; // ✅ NEW
+  onDelete: (ruleSet: { name: string; rules: any[] }) => void; // ✅ NEW
 }
 
-const RuleList: React.FC<RuleListProps> = ({ setModalOpen, onEdit }) => {
+const RuleList: React.FC<RuleListProps> = ({ setModalOpen, onEdit, onDelete }) => {
   const { state } = useRuleContext();
   const [selectedRuleSet, setSelectedRuleSet] = useState<{ name: string; rules: any[] } | null>(null);
 
@@ -37,7 +38,7 @@ const RuleList: React.FC<RuleListProps> = ({ setModalOpen, onEdit }) => {
   };
 
   return (
-    <div className="p-6">
+    <div className="h-4/5">
       <div className="flex text-white justify-between w-full mb-6">
         <h2 className="text-4xl font-semibold">Saved Rule Sets</h2>
         <button
@@ -48,9 +49,9 @@ const RuleList: React.FC<RuleListProps> = ({ setModalOpen, onEdit }) => {
         </button>
       </div>
 
-      <div>
+      <div className="h-full" >
         {state.ruleSets.length === 0 ? (
-          <p className="text-gray-600 text-center text-3xl flex flex-col items-center gap-5">
+          <p className="text-gray-400 h-full text-center text-3xl flex flex-col items-center justify-center gap-5">
             <FileX size={72} /> No rule sets available.
           </p>
         ) : (
@@ -70,6 +71,12 @@ const RuleList: React.FC<RuleListProps> = ({ setModalOpen, onEdit }) => {
                     className="bg-purple-500 text-white p-3 rounded-lg hover:bg-yellow-600"
                   >
                     <Edit size={28}/>
+                  </button>
+                  <button
+                    onClick={() => onDelete(ruleSet)} // ✅ Trigger edit
+                    className="bg-purple-500 text-white p-3 rounded-lg hover:bg-yellow-600"
+                  >
+                    <Trash size={28}/>
                   </button>
                 </div>
               </li>

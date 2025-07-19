@@ -19,10 +19,12 @@ interface RuleState {
   ruleSets: RuleSet[];
 }
 
+
 // Action types
 const ADD_RULE_SET = "ADD_RULE_SET";
 const ADD_RULE_TO_SET = "ADD_RULE_TO_SET";
 const UPDATE_RULE_SET = "UPDATE_RULE_SET";
+const DELETE_RULE_SET = "DELETE_RULE_SET";
 
 // Action interfaces
 interface AddRuleSetAction {
@@ -40,7 +42,16 @@ interface UpdateRuleSetAction {
   payload: RuleSet;
 }
 
-type RuleActions = AddRuleSetAction | AddRuleToSetAction | UpdateRuleSetAction;
+interface DeleteRuleSetAction {
+  type: typeof DELETE_RULE_SET;
+  payload: RuleSet;
+}
+
+type RuleActions =
+  | AddRuleSetAction
+  | AddRuleToSetAction
+  | UpdateRuleSetAction
+  | DeleteRuleSetAction;
 
 // Load initial state from localStorage or use default
 const loadInitialState = (): RuleState => {
@@ -60,13 +71,22 @@ const ruleReducer = (state: RuleState, action: RuleActions): RuleState => {
       return {
         ...state,
         ruleSets: state.ruleSets.map((ruleSet) =>
-          ruleSet.name === action.payload.ruleSetName ? { ...ruleSet, rules: [...ruleSet.rules, action.payload.rule] } : ruleSet
+          ruleSet.name === action.payload.ruleSetName
+            ? { ...ruleSet, rules: [...ruleSet.rules, action.payload.rule] }
+            : ruleSet
         ),
       };
     case UPDATE_RULE_SET:
       return {
         ...state,
-        ruleSets: state.ruleSets.map((set) => (set.name === action.payload.name ? action.payload : set)),
+        ruleSets: state.ruleSets.map((set) =>
+          set.name === action.payload.name ? action.payload : set
+        ),
+      };
+    case DELETE_RULE_SET:
+      return {
+        ...state,
+        ruleSets: state.ruleSets.filter((rs) => rs.name !== action.payload.name),
       };
     default:
       return state;
@@ -85,7 +105,11 @@ export const RuleProvider = ({ children }: any) => {
     localStorage.setItem("ruleState", JSON.stringify(state));
   }, [state]);
 
-  return <RuleContext.Provider value={{ state, dispatch }}>{children}</RuleContext.Provider>;
+  return (
+    <RuleContext.Provider value={{ state, dispatch }}>
+      {children}
+    </RuleContext.Provider>
+  );
 };
 
 // Custom hook to use the rule context
