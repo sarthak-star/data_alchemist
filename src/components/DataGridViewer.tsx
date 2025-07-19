@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { AgGridReact } from "ag-grid-react";
-import { AllCommunityModule, ModuleRegistry, themeMaterial } from "ag-grid-community";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  themeMaterial,
+} from "ag-grid-community";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -20,7 +24,11 @@ interface Props {
   onDataUpdate?: (rows: any[]) => void;
 }
 
-export default function DataGridViewer({ file, validationOptions, onDataUpdate }: Props) {
+export default function DataGridViewer({
+  file,
+  validationOptions,
+  onDataUpdate,
+}: Props) {
   const [columns, setColumns] = useState<any[]>([]);
   const [rows, setRows] = useState<any[]>([]);
   const [validationRules, setValidationRules] = useState<any[]>([]);
@@ -55,7 +63,10 @@ export default function DataGridViewer({ file, validationOptions, onDataUpdate }
               const errorColor = errorObj?.color || "#ef4444";
 
               return (
-                <div className={`${errorObj ? "text-white" : "text-black"}`} style={{ backgroundColor: errorObj ? errorColor : "white" }}>
+                <div
+                  className={`${errorObj ? "text-white" : "text-black"}`}
+                  style={{ backgroundColor: errorObj ? errorColor : "white" }}
+                >
                   <div>{value}</div>
                   {/* {errorObj && (
                     <div style={{ fontSize: "12px" }}>
@@ -67,7 +78,12 @@ export default function DataGridViewer({ file, validationOptions, onDataUpdate }
             },
             cellStyle: (params: any) => {
               const errorObj = params.data?.errors?.[params.colDef.field];
-              return errorObj ? { backgroundColor: errorObj.color || "#ef4444", color: "white" } : { backgroundColor: "white", color: "black" };
+              return errorObj
+                ? {
+                    backgroundColor: errorObj.color || "#ef4444",
+                    color: "white",
+                  }
+                : { backgroundColor: "white", color: "black" };
             },
             tooltipValueGetter: (params: any) => {
               const errorObj = params.data?.errors?.[params.colDef.field];
@@ -75,10 +91,18 @@ export default function DataGridViewer({ file, validationOptions, onDataUpdate }
             },
           }));
 
-          const jsonRows = jsonData.map((rowData) => ({ ...rowData, errors: {} }));
+          const jsonRows = jsonData.map((rowData) => ({
+            ...rowData,
+            errors: {},
+            _errorCount: 0,
+          }));
           setColumns(columnDefs);
-          setRows(jsonRows);
-          onDataUpdate?.(jsonRows);
+          const rowsWithErrors = jsonRows.map((row) => ({
+            ...row,
+            _errorCount: Object.keys(row.errors || {}).length,
+          }));
+          setRows(rowsWithErrors);
+          onDataUpdate?.(rowsWithErrors);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -87,7 +111,10 @@ export default function DataGridViewer({ file, validationOptions, onDataUpdate }
     parseFile();
   }, [file]);
 
-  const getValidatorForColumn = (columnName: string, validationRules: Rule[]) => {
+  const getValidatorForColumn = (
+    columnName: string,
+    validationRules: Rule[]
+  ) => {
     const rule = validationRules.find((rule) => rule.column === columnName);
     if (!rule) return null;
 
@@ -159,19 +186,26 @@ export default function DataGridViewer({ file, validationOptions, onDataUpdate }
         editType="singleCell"
         onCellValueChanged={(event: any) => {
           const { colDef, data } = event;
-          const validator = getValidatorForColumn(colDef.field ?? "", validationRules);
+          const validator = getValidatorForColumn(
+            colDef.field ?? "",
+            validationRules
+          );
           if (validator) {
             const res = validator(event);
             const errors = { ...data.errors };
             if (!res.valid) {
-              errors[colDef.field] = { error: res.error, color: res.errorColor }; // Store error errorMessage for specific cell
+              errors[colDef.field] = {
+                error: res.error,
+                color: res.errorColor,
+              }; // Store error errorMessage for specific cell
             } else {
               delete errors[colDef.field]; // Clear error for specific cell if valid
             }
             data.errors = errors; // Update errors object in row
+            data._errorCount = Object.keys(errors).length;
             event.api.refreshCells({ rowNodes: [event.node], force: true });
           }
-          setRows([...rows]); // Ensure latest data is saved
+          setRows([...rows]); // This will include updated _errorCount
           onDataUpdate?.([...rows]);
         }}
         defaultColDef={defaultColDef}

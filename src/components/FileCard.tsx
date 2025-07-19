@@ -27,7 +27,7 @@ export default function FileCard({ file }: FileCardProps) {
   return (
     <div
       onClick={handleNavigate}
-      className="cursor-pointer hover:border-purple-400 border border-gray-500 shadow-md rounded-md p-4 h-[50%] w-fit flex items-center gap-4"
+      className="cursor-pointer  hover:border-purple-400 border border-gray-500 shadow-md rounded-md p-4 h-fit  flex items-center gap-4"
     >
       <div className="bg-purple-100 p-2 rounded-full">
         <FileSpreadsheet className="text-purple-600" size={24} />

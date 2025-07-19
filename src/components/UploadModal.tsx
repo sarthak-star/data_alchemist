@@ -1,4 +1,4 @@
-import { ArrowDown, UploadIcon } from "lucide-react";
+import { ArrowDown, ChevronDown, UploadIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
@@ -55,7 +55,7 @@ export default function UploadModal({ onClose, onUpload }: UploadModalProps) {
             <option value="task">Task</option>
           </select>
           <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white text-sm">
-            <ArrowDown size={18} />
+            <ChevronDown size={18} />
           </div>
         </div>
 

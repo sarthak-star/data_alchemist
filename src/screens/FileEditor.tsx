@@ -1,7 +1,7 @@
 import { useLocation, useParams } from "react-router-dom"; // You should have a global store/context
 import DataGridViewer from "../components/DataGridViewer";
 import { typeColors } from "../components/FileCard";
-import { Download } from "lucide-react";
+import { CheckCircle, ChevronDown, Download, XCircle } from "lucide-react";
 import { useRuleContext } from "../context/RuleContext"; // Import RuleContext hook
 import { useState } from "react";
 import * as XLSX from "xlsx";
@@ -56,35 +56,73 @@ export default function FileEditor() {
     link.download = "validation_rules.json";
     link.click();
   };
-
+  const totalErrors = currentGridData.reduce(
+    (acc, row) => acc + (row._errorCount || 0),
+    0
+  );
   return (
     <div className="p-6 pt-32 text-white h-screen">
       <div className="flex justify-between mb-5">
         <div className="flex gap-2 items-end">
-          <h1 className="font-medium text-white truncate text-2xl">{file.name}</h1>
-          <span className={`text-xs px-2 py-1 rounded ${typeColors[fileType ?? ""]}`}>
+          <h1 className="font-medium text-white truncate text-2xl">
+            {file.name}
+          </h1>
+          <span
+            className={`text-xs px-2 py-1 rounded ${
+              typeColors[fileType ?? ""]
+            }`}
+          >
             {fileType.charAt(0).toUpperCase() + fileType.slice(1)} File
+          </span>
+          <span
+            className={`flex items-center gap-1 font-semibold text-sm ${
+              totalErrors === 0 ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {totalErrors === 0 ? (
+              <>
+                <CheckCircle size={16} className="text-green-600" />
+                Valid
+              </>
+            ) : (
+              <>
+                <XCircle size={16} className="text-red-600" />
+                {totalErrors} errors
+              </>
+            )}
           </span>
         </div>
         <div className="flex gap-2">
           {/* Dropdown for rule set selection */}
-          <div className="flex items-end ">
-            <label htmlFor="rule-set-select" className="text-lg">
-              Select Rule Set
-            </label>
-            <select id="rule-set-select" className="ml-2 p-2 rounded text-black" value={selectedRuleSet} onChange={handleRuleSetChange}>
-              <option value="">-- Select Rule Set --</option>
+          <div className="relative inline-block">
+            <select
+              id="rule-set-select"
+              className="appearance-none px-4 py-2 pr-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              value={selectedRuleSet}
+              onChange={handleRuleSetChange}
+            >
+              <option value="">Select Rule Set</option>
               {state.ruleSets.map((ruleSet: { name: string; rules: any[] }) => (
-                <option key={ruleSet.name} value={JSON.stringify(ruleSet.rules)}>
+                <option
+                  key={ruleSet.name}
+                  value={JSON.stringify(ruleSet.rules)}
+                >
                   {ruleSet.name}
                 </option>
               ))}
             </select>
+            <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-300 absolute top-1/2 right-3 transform -translate-y-1/2 pointer-events-none" />
           </div>
-          <button className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded-md font-small" onClick={() => handleExportData("xlsx")}>
+          <button
+            className="flex items-center gap-1 bg-purple-500 text-white px-3 py-1 rounded-md font-small"
+            onClick={() => handleExportData("xlsx")}
+          >
             <Download size={18} /> Export Data
           </button>
-          <button className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded-md font-small" onClick={handleExportRules}>
+          <button
+            className="flex items-center gap-1 bg-purple-500 text-white px-3 py-1 rounded-md font-small"
+            onClick={handleExportRules}
+          >
             <Download size={18} /> Export Rules
           </button>
         </div>
@@ -92,7 +130,11 @@ export default function FileEditor() {
 
       <div className="h-4/5">
         {/* Pass the selected rules as props to DataGridViewer */}
-        <DataGridViewer file={file} validationOptions={selectedRuleSet ?? "[]"} onDataUpdate={setCurrentGridData} />
+        <DataGridViewer
+          file={file}
+          validationOptions={selectedRuleSet ?? "[]"}
+          onDataUpdate={setCurrentGridData}
+        />
       </div>
     </div>
   );

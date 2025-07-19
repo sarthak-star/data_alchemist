@@ -45,9 +45,9 @@ export default function ManageData() {
       </div>
 
       {/* Two-column layout */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-4/5">
+      <div className="flex gap-4 h-4/5">
         {/* Sidebar tabs */}
-        <div className="md:col-span-1 border-r  h-full ">
+        <div className="w-1/3 border-r  h-full ">
           <div className="flex md:flex-col gap-2 rounded-md p-4 shadow-xl">
             {(["client", "worker", "task"] as const).map((tab) => (
               <button
@@ -64,15 +64,15 @@ export default function ManageData() {
         </div>
 
         {/* File cards */}
-        <div className="md:col-span-3 h-full overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="h-full w-full overflow-y-auto flex gap-4">
           {filteredFiles.length > 0 ? (
             filteredFiles.map((file, index) => (
-              <div key={index} id={`file-card-${index}`}>
+              <div className="w-1/3" key={index} id={`file-card-${index}`}>
                 <FileCard file={file} />
               </div>
             ))
           ) : (
-            <div className="col-span-full flex flex-col justify-center items-center gap-5 text-gray-400 text-center text-2xl py-10">
+            <div className="flex flex-col w-full justify-center items-center gap-5 text-gray-400 text-center text-2xl py-10">
               <FileX size={72} /> No {selectedTab}s uploaded yet.
             </div>
           )}
