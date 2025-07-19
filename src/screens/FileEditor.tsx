@@ -1,10 +1,19 @@
 import { useLocation, useParams } from "react-router-dom"; // You should have a global store/context
 import DataGridViewer from "../components/DataGridViewer";
 import { typeColors } from "../components/FileCard";
-import { CheckCircle, ChevronDown, Download, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  ChevronDown,
+  Download,
+  MoveRight,
+  XCircle,
+} from "lucide-react";
 import { useRuleContext } from "../context/RuleContext"; // Import RuleContext hook
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
+import type { Rule } from "./ConfigureRules";
+import { getValidatorForColumn } from "../utils/Validators";
 
 export default function FileEditor() {
   const location = useLocation();
@@ -12,7 +21,9 @@ export default function FileEditor() {
   const { fileType = "" } = useParams(); // from /manage/:type/:filename
   const { state } = useRuleContext(); // Access the global state
   const [currentGridData, setCurrentGridData] = useState<any[]>([]);
-
+  const [gridApi, setGridApi] = useState<any>(null);
+  const [errorRowIndices, setErrorRowIndices] = useState<number[]>([]);
+  const [currentErrorIndex, setCurrentErrorIndex] = useState(0);
   const [selectedRuleSet, setSelectedRuleSet] = useState<string>(); // Local state for selected rule set
 
   if (!file) {
@@ -22,6 +33,10 @@ export default function FileEditor() {
   // Handle change of selected rule set
   const handleRuleSetChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedRuleSet(event.target.value);
+  };
+
+  const handleGridReady = (params: any) => {
+    setGridApi(params.api);
   };
 
   const handleExportData = (format: "xlsx" | "csv") => {
@@ -56,6 +71,48 @@ export default function FileEditor() {
     link.download = "validation_rules.json";
     link.click();
   };
+
+  useEffect(() => {
+    if (!selectedRuleSet || !gridApi || !currentGridData.length) return;
+    const rules = JSON.parse(selectedRuleSet) as Rule[];
+
+    const updatedData = currentGridData.map((row) => {
+      const newErrors: Record<string, { error: string; color: string }> = {};
+
+      Object.keys(row).forEach((key) => {
+        if (key === "errors" || key === "_errorCount") return;
+        const validator = getValidatorForColumn(key, rules);
+        if (validator) {
+          const result = validator({ newValue: row[key] });
+          if (!result.valid && result.error) {
+            newErrors[key] = {
+              error: result.error,
+              color: result.errorColor,
+            };
+          }
+        }
+      });
+
+      return {
+        ...row,
+        errors: newErrors,
+        _errorCount: Object.keys(newErrors).length,
+      };
+    });
+
+    setCurrentGridData(updatedData); // Update your local state
+
+    // ✅ Use AG Grid transaction to update rows
+    gridApi.applyTransaction({ update: updatedData });
+
+    // ✅ Recalculate error row indices
+    const errorIndices = updatedData
+      .map((row, index) => (row._errorCount > 0 ? index : -1))
+      .filter((i) => i !== -1);
+    setErrorRowIndices(errorIndices);
+    setCurrentErrorIndex(0);
+  }, [selectedRuleSet, gridApi]);
+
   const totalErrors = currentGridData.reduce(
     (acc, row) => acc + (row._errorCount || 0),
     0
@@ -76,21 +133,48 @@ export default function FileEditor() {
           </span>
           <span
             className={`flex items-center gap-1 font-semibold text-sm ${
-              totalErrors === 0 ? "text-green-600" : "text-red-600"
+              selectedRuleSet
+                ? totalErrors === 0
+                  ? "text-green-600"
+                  : "text-red-600"
+                : "text-yellow-600"
             }`}
           >
-            {totalErrors === 0 ? (
-              <>
-                <CheckCircle size={16} className="text-green-600" />
-                Valid
-              </>
+            {selectedRuleSet ? (
+              totalErrors === 0 ? (
+                <>
+                  <CheckCircle size={16} className="text-green-600" />
+                  Valid
+                </>
+              ) : (
+                <>
+                  <XCircle size={16} className="text-red-600" />
+                  {totalErrors} errors
+                </>
+              )
             ) : (
               <>
-                <XCircle size={16} className="text-red-600" />
-                {totalErrors} errors
+                <AlertTriangle size={16} className="text-yellow-600" />
+                No rule set selected
               </>
             )}
           </span>
+
+          {totalErrors > 0 && (
+            <button
+              onClick={() => {
+                if (!gridApi || errorRowIndices.length === 0) return;
+                const nextIndex = errorRowIndices[currentErrorIndex];
+                gridApi.ensureIndexVisible(nextIndex, "middle");
+                setCurrentErrorIndex((prev) =>
+                  prev + 1 < errorRowIndices.length ? prev + 1 : 0
+                );
+              }}
+              className="ml-2 flex items-center gap-2 px-2 py-1 text-xs bg-transparent border border-red-500 text-red-500 rounded hover:bg-red-700 transition"
+            >
+              Next Error <MoveRight />
+            </button>
+          )}
         </div>
         <div className="flex gap-2">
           {/* Dropdown for rule set selection */}
@@ -133,7 +217,15 @@ export default function FileEditor() {
         <DataGridViewer
           file={file}
           validationOptions={selectedRuleSet ?? "[]"}
-          onDataUpdate={setCurrentGridData}
+          onDataUpdate={(data) => {
+            setCurrentGridData(data);
+            const errorRows = data
+              .map((row, index) => (row._errorCount > 0 ? index : -1))
+              .filter((i) => i !== -1);
+            setErrorRowIndices(errorRows);
+            setCurrentErrorIndex(0);
+          }}
+          onGridReady={handleGridReady}
         />
       </div>
     </div>
