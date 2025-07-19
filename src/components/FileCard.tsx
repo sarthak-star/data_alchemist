@@ -19,7 +19,8 @@ export default function FileCard({ file }: FileCardProps) {
   const navigate = useNavigate();
 
   const handleNavigate = () => {
-    navigate(`/manage/${file.type}/${encodeURIComponent(file.name)}`, {
+    const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
+    navigate(`/manage/${file.type}/${encodeURIComponent(fileNameWithoutExtension)}`, {
       state: { file: file.file },
     });
   };
